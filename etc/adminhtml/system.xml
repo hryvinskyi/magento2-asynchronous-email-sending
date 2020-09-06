@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
+  ~ @author: <mailto:volodymyr@hryvinskyi.com>
+  ~ @github: <https://github.com/hryvinskyi>
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="hryvinskyi_asynchronous_sending" translate="label" type="text" sortOrder="20" showInDefault="1"
+                 showInWebsite="1" showInStore="0">
+            <label>Asynchronous Email Sending</label>
+            <tab>hryvinskyi</tab>
+            <resource>Hryvinskyi_AsynchronousEmailSending::configuration</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1">
+                <label>General Settings</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1">
+                    <label>Enable Asynchronous Sending</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <backend_model>Hryvinskyi\AsynchronousEmailSending\Model\Config\Backend\AsyncSending</backend_model>
+                </field>
+                <field id="sending_limit" translate="label" type="text" sortOrder="20" showInDefault="1">
+                    <label>Limit per cron run</label>
+                    <comment>Limit how many emails will be processed during one cron run.</comment>
+                    <validate>required-number validate-number validate-greater-than-zero</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="debug" translate="label" type="select" sortOrder="200" showInDefault="1">
+                    <label>Debugging</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+        <section id="sales_email">
+            <group id="general">
+                <field id="async_sending">
+                    <frontend_model>Hryvinskyi\AsynchronousEmailSending\Block\System\Config\Form\Field\Disable</frontend_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

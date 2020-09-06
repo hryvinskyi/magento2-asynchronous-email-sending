@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
+  ~ @author: <mailto:volodymyr@hryvinskyi.com>
+  ~ @github: <https://github.com/hryvinskyi>
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Hryvinskyi\AsynchronousEmailSending\Api\Data\AsyncEmailInterface"
+                type="Hryvinskyi\AsynchronousEmailSending\Model\AsyncEmail"/>
+    <preference for="Hryvinskyi\AsynchronousEmailSending\Api\AsyncEmailRepositoryInterface"
+                type="Hryvinskyi\AsynchronousEmailSending\Model\AsyncEmailRepository"/>
+    <preference for="Hryvinskyi\AsynchronousEmailSending\Api\Data\AsyncEmailSearchResultsInterface"
+                type="Hryvinskyi\AsynchronousEmailSending\Model\AsyncEmailSearchResults"/>
+    <preference for="Hryvinskyi\AsynchronousEmailSending\Model\EmailSenderHandlerInterface"
+                type="Hryvinskyi\AsynchronousEmailSending\Model\EmailSenderHandler"/>
+
+    <type name="Hryvinskyi\AsynchronousEmailSending\Plugin\CatchAndSave">
+        <arguments>
+            <argument name="logger" xsi:type="object">Hryvinskyi\AsynchronousEmailSending\Model\Logger</argument>
+        </arguments>
+    </type>
+
+    <type name="Hryvinskyi\AsynchronousEmailSending\Model\EmailSenderHandler">
+        <arguments>
+            <argument name="logger" xsi:type="object">Hryvinskyi\AsynchronousEmailSending\Model\Logger</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Framework\Mail\TransportInterface">
+        <plugin name="Hryvinskyi_AsynchronousEmailSending::catch_and_save"
+                type="Hryvinskyi\AsynchronousEmailSending\Plugin\CatchAndSave" sortOrder="1"/>
+    </type>
+
+    <virtualType name="Hryvinskyi\AsynchronousEmailSending\Model\Logger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="debug" xsi:type="object">Hryvinskyi\AsynchronousEmailSending\Model\Debug</item>
+            </argument>
+        </arguments>
+    </virtualType>
+</config>

@@ -1,0 +1,15 @@
+{
+    "hryvinskyi_asynchronous_email_sending": {
+        "column": {
+            "entity_id": true,
+            "status": true,
+            "subject": true,
+            "raw_message": true,
+            "created_at": true,
+            "sent_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

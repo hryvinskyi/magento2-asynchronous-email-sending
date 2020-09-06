@@ -1,0 +1,22 @@
+{
+	"name": "hryvinskyi/magento2-asynchronous-email-sending",
+	"version": "1.0.0",
+	"description": "N/A",
+	"type": "magento2-module",
+	"require": {
+        "zendframework/zend-mail": "*",
+		"magento/framework": "*",
+		"magento/module-email": "*"
+	},
+	"license": [
+		"MIT"
+	],
+	"autoload": {
+		"files": [
+			"registration.php"
+		],
+		"psr-4": {
+			"Hryvinskyi\\AsynchronousEmailSending\\": ""
+		}
+	}
+}
