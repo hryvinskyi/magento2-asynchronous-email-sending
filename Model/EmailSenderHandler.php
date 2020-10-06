@@ -11,8 +11,10 @@ namespace Hryvinskyi\AsynchronousEmailSending\Model;
 
 use Hryvinskyi\AsynchronousEmailSending\Api\AsyncEmailRepositoryInterface;
 use Hryvinskyi\AsynchronousEmailSending\Service\SendFlag;
+use Magento\Framework\App\ProductMetadataInterface;
 use Psr\Log\LoggerInterface;
 use Zend\Mail\Message;
+use Zend\Mime\Mime;
 
 /**
  * Class EmailSenderHandler
@@ -45,6 +47,11 @@ class EmailSenderHandler implements EmailSenderHandlerInterface
     private $sendFlag;
 
     /**
+     * @var ProductMetadataInterface
+     */
+    private $magentoProductMetaData;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -65,14 +72,16 @@ class EmailSenderHandler implements EmailSenderHandlerInterface
         TransportFactory $transportFactory,
         MailMessageFactory $mailMessageFactory,
         SendFlag $sendFlag,
+        ProductMetadataInterface $magentoProductMetaData,
         LoggerInterface $logger
     ) {
         $this->config = $config;
         $this->asyncEmailRepository = $asyncEmailRepository;
         $this->transportFactory = $transportFactory;
         $this->mailMessageFactory = $mailMessageFactory;
-        $this->logger = $logger;
         $this->sendFlag = $sendFlag;
+        $this->magentoProductMetaData = $magentoProductMetaData;
+        $this->logger = $logger;
     }
 
     /**
@@ -92,6 +101,12 @@ class EmailSenderHandler implements EmailSenderHandlerInterface
                 /** @var MailMessage $mailMessage */
                 $mailMessage = $this->mailMessageFactory->create();
 
+                $body = $message->getBody();
+
+                if (version_compare($this->magentoProductMetaData->getVersion(), "2.3.3", ">=")) {
+                    $body = quoted_printable_decode($body);
+                }
+
                 $mailMessage
                     ->setSubject($message->getSubject())
                     ->setFrom($message->getFrom())
@@ -99,8 +114,8 @@ class EmailSenderHandler implements EmailSenderHandlerInterface
                     ->addBcc($message->getBcc())
                     ->addCc($message->getBcc())
                     ->addTo($message->getTo())
-                    ->setBody($message->getBody())
-                    ->setBodyText($message->getBodyText())
+                    ->setMessageType($body != strip_tags($body) ? Mime::TYPE_HTML : Mime::TYPE_TEXT)
+                    ->setBody($body)
                     ->setRawMessage($item->getRawMessage());
 
                 $transport = $this->transportFactory->create($mailMessage);

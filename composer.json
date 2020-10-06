@@ -1,6 +1,6 @@
 {
 	"name": "hryvinskyi/magento2-asynchronous-email-sending",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "N/A",
 	"type": "magento2-module",
 	"require": {
