@@ -11,5 +11,13 @@
              instance="Hryvinskyi\AsynchronousEmailSending\Cron\SendEmails" method="execute">
             <schedule>* * * * *</schedule>
         </job>
+        <job name="Hryvinskyi_AsynchronousEmailSending::queue_clear_error"
+             instance="Hryvinskyi\AsynchronousEmailSending\Cron\QueueClearError" method="execute">
+            <schedule>0 0 * * *</schedule>
+        </job>
+        <job name="Hryvinskyi_AsynchronousEmailSending::queue_clear_success"
+             instance="Hryvinskyi\AsynchronousEmailSending\Cron\QueueClearSuccess" method="execute">
+            <schedule>10 0 * * *</schedule>
+        </job>
     </group>
 </config>

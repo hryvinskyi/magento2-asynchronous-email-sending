@@ -27,6 +27,21 @@
                         <field id="enabled">1</field>
                     </depends>
                 </field>
+                <field id="clear_success_after_days" translate="label" type="text" sortOrder="30" showInDefault="1">
+                    <label>Clear success history after days</label>
+                    <validate>required-number validate-number</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="clear_errors_after_days" translate="label" type="text" sortOrder="40" showInDefault="1">
+                    <label>Clear error history after days</label>
+                    <validate>required-number validate-number</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+
                 <field id="debug" translate="label" type="select" sortOrder="200" showInDefault="1">
                     <label>Debugging</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

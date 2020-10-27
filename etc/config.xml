@@ -12,6 +12,8 @@
             <general>
                 <enabled>0</enabled>
                 <sending_limit>50</sending_limit>
+                <clear_success_after_days>30</clear_success_after_days>
+                <clear_errors_after_days>60</clear_errors_after_days>
                 <debug>0</debug>
             </general>
         </hryvinskyi_asynchronous_sending>

@@ -22,6 +22,8 @@ class Config
     const XML_CONF_SALES_EMAIL_ASYNC_SENDING = 'sales_email/general/async_sending';
     const XML_CONF_GENERAL_ENABLED = 'hryvinskyi_asynchronous_sending/general/enabled';
     const XML_CONF_GENERAL_SENDING_LIMIT = 'hryvinskyi_asynchronous_sending/general/sending_limit';
+    const XML_CONF_GENERAL_CLEAR_SUCCESS_AFTER_DAYS = 'hryvinskyi_asynchronous_sending/general/clear_success_after_days';
+    const XML_CONF_GENERAL_CLEAR_ERRORS_AFTER_DAYS = 'hryvinskyi_asynchronous_sending/general/clear_errors_after_days';
     const XML_CONF_GENERAL_DEBUG = 'hryvinskyi_asynchronous_sending/general/debug';
 
     /**
@@ -61,6 +63,22 @@ class Config
     public function isSalesAsyncSending(): bool
     {
         return $this->scopeConfig->isSetFlag(self::XML_CONF_SALES_EMAIL_ASYNC_SENDING);
+    }
+
+    /**
+     * @return int
+     */
+    public function getClearSuccessAfterDays(): int
+    {
+        return (int)$this->scopeConfig->getValue(self::XML_CONF_GENERAL_CLEAR_SUCCESS_AFTER_DAYS);
+    }
+
+    /**
+     * @return int
+     */
+    public function getClearErrorAfterDays(): int
+    {
+        return (int)$this->scopeConfig->getValue(self::XML_CONF_GENERAL_CLEAR_ERRORS_AFTER_DAYS);
     }
 
     /**

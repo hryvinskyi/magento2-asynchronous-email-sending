@@ -250,4 +250,17 @@ class AsyncEmailRepository implements AsyncEmailRepositoryInterface
 
         return $entity->setRawMessage((string)$rawContent)->setSubject($subject);
     }
+
+    /**
+     * Clear
+     *
+     * @param int $days
+     * @param int $status
+     *
+     * @throws \Hryvinskyi\AsynchronousEmailSending\Exception\InvalidStatusException
+     */
+    public function clear(int $days, int $status): void
+    {
+        $this->resource->clear($days, $status);
+    }
 }
