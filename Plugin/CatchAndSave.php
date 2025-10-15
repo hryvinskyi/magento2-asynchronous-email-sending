@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -16,52 +16,28 @@ use Magento\Framework\Mail\TransportInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class CatchAndSave
+ * Plugin to intercept and queue outgoing emails
  */
 class CatchAndSave
 {
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var AsyncEmailRepositoryInterface
-     */
-    private $asyncEmailRepository;
-
-    /**
-     * @var SendFlag
-     */
-    private $sendFlag;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * CatchAndSave constructor.
-     *
      * @param Config $config
      * @param AsyncEmailRepositoryInterface $asyncEmailRepository
+     * @param SendFlag $sendFlag
      * @param LoggerInterface $logger
      */
     public function __construct(
-        Config $config,
-        AsyncEmailRepositoryInterface $asyncEmailRepository,
-        SendFlag $sendFlag,
-        LoggerInterface $logger
+        private readonly Config $config,
+        private readonly AsyncEmailRepositoryInterface $asyncEmailRepository,
+        private readonly SendFlag $sendFlag,
+        private readonly LoggerInterface $logger
     ) {
-        $this->config = $config;
-        $this->asyncEmailRepository = $asyncEmailRepository;
-        $this->sendFlag = $sendFlag;
-        $this->logger = $logger;
     }
 
     /**
      * @param TransportInterface $subject
      * @param \Closure $proceed
+     * @return void
      */
     public function aroundSendMessage(
         TransportInterface $subject,
@@ -75,7 +51,7 @@ class CatchAndSave
             $this->asyncEmailRepository->saveTransport($subject);
         } catch (\Throwable $e) {
             $this->logger->critical($e->getMessage(), $e->getTrace());
-            $proceed();
+            return $proceed();
         }
     }
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -11,6 +11,7 @@ namespace Hryvinskyi\AsynchronousEmailSending\Model;
 
 use Magento\Framework\Filesystem\DriverInterface;
 use Magento\Framework\Logger\Handler\Base;
+use Monolog\LogRecord;
 
 /**
  * Class Debug
@@ -47,7 +48,7 @@ class Debug extends Base
      * @inheritDoc
      * @throws \Magento\Framework\Exception\FileSystemException
      */
-    public function write(array $record)
+    protected function write(LogRecord $record): void
     {
         if ($this->config->isDebug() === false) {
             return;

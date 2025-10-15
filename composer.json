@@ -1,15 +1,23 @@
 {
 	"name": "hryvinskyi/magento2-asynchronous-email-sending",
-	"version": "1.0.2",
-	"description": "N/A",
+	"version": "1.1.0",
+	"description": "Asynchronous Email Sending module for Magento 2 - Queues emails for background processing via cron to improve performance",
 	"type": "magento2-module",
 	"require": {
-        "zendframework/zend-mail": "*",
-		"magento/framework": "*",
+		"php": "~8.3.0|~8.4.0",
+		"magento/framework": "^103.0.8",
+		"magento/module-backend": "*",
+		"magento/module-config": "*",
 		"magento/module-email": "*"
 	},
 	"license": [
 		"MIT"
+	],
+	"authors": [
+		{
+			"name": "Volodymyr Hryvinskyi",
+			"email": "volodymyr@hryvinskyi.com"
+		}
 	],
 	"autoload": {
 		"files": [

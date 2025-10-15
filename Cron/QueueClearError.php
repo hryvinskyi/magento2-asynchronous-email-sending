@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -15,38 +15,21 @@ use Hryvinskyi\AsynchronousEmailSending\Exception\InvalidStatusException;
 use Hryvinskyi\AsynchronousEmailSending\Model\Config;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Cron job to clear old error emails from queue
+ */
 class QueueClearError
 {
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var AsyncEmailRepositoryInterface
-     */
-    private $asyncEmailRepository;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * QueueClearSuccess constructor.
-     *
      * @param Config $config
      * @param AsyncEmailRepositoryInterface $asyncEmailRepository
      * @param LoggerInterface $logger
      */
     public function __construct(
-        Config $config,
-        AsyncEmailRepositoryInterface $asyncEmailRepository,
-        LoggerInterface $logger
+        private readonly Config $config,
+        private readonly AsyncEmailRepositoryInterface $asyncEmailRepository,
+        private readonly LoggerInterface $logger
     ) {
-        $this->config = $config;
-        $this->asyncEmailRepository = $asyncEmailRepository;
-        $this->logger = $logger;
     }
 
     /**

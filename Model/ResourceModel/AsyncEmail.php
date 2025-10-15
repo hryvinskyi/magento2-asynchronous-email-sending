@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -13,11 +13,6 @@ use Hryvinskyi\AsynchronousEmailSending\Api\Data\AsyncEmailInterface;
 use Hryvinskyi\AsynchronousEmailSending\Exception\InvalidStatusException;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
-/**
- * Class AsyncEmail
- *
- * @package Hryvinskyi\AsynchronousEmailSending\Model\ResourceModel
- */
 class AsyncEmail extends AbstractDb
 {
     /**
@@ -29,7 +24,12 @@ class AsyncEmail extends AbstractDb
     }
 
     /**
-     * @inheritDoc
+     * Clear old emails by status
+     * @param int $days Number of days to keep
+     * @param int $status Status to clear (AsyncEmailInterface::STATUS_ERROR or AsyncEmailInterface::STATUS_SENT)
+     *
+     * @return void
+     *
      * @throws InvalidStatusException
      */
     public function clear(int $days, int $status): void

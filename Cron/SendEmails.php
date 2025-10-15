@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -12,23 +12,16 @@ namespace Hryvinskyi\AsynchronousEmailSending\Cron;
 use Hryvinskyi\AsynchronousEmailSending\Model\EmailSenderHandlerInterface;
 
 /**
- * Queue emails sending.
+ * Cron job to send queued emails
  */
 class SendEmails
 {
     /**
-     * Global configuration storage.
-     *
-     * @var EmailSenderHandlerInterface
+     * @param EmailSenderHandlerInterface $emailSenderHandler Email sender handler
      */
-    private $emailSenderHandler;
-
-    /**
-     * @param EmailSenderHandlerInterface $emailSenderHandler
-     */
-    public function __construct(EmailSenderHandlerInterface $emailSenderHandler)
-    {
-        $this->emailSenderHandler = $emailSenderHandler;
+    public function __construct(
+        private readonly EmailSenderHandlerInterface $emailSenderHandler
+    ) {
     }
 
     /**

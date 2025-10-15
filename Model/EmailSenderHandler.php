@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -10,128 +10,127 @@ declare(strict_types=1);
 namespace Hryvinskyi\AsynchronousEmailSending\Model;
 
 use Hryvinskyi\AsynchronousEmailSending\Api\AsyncEmailRepositoryInterface;
+use Hryvinskyi\AsynchronousEmailSending\Api\Service\MessageParserInterface;
+use Hryvinskyi\AsynchronousEmailSending\Api\Service\MessagePopulatorInterface;
 use Hryvinskyi\AsynchronousEmailSending\Service\SendFlag;
-use Magento\Framework\App\ProductMetadataInterface;
+use Magento\Framework\Exception\CouldNotSaveException;
 use Psr\Log\LoggerInterface;
-use Zend\Mail\Message;
-use Zend\Mime\Mime;
 
 /**
- * Class EmailSenderHandler
+ * Email Sender Handler for Symfony Mailer (Magento 2.4.8+)
  */
 class EmailSenderHandler implements EmailSenderHandlerInterface
 {
     /**
-     * @var Config
+     * Status code for successfully sent email
      */
-    private $config;
+    private const STATUS_SENT = 1;
 
     /**
-     * @var AsyncEmailRepositoryInterface
+     * Status code for failed email
      */
-    private $asyncEmailRepository;
+    private const STATUS_FAILED = 2;
 
-    /**
-     * @var TransportFactory
-     */
-    private $transportFactory;
-
-    /**
-     * @var MailMessageFactory
-     */
-    private $mailMessageFactory;
-
-    /**
-     * @var SendFlag
-     */
-    private $sendFlag;
-
-    /**
-     * @var ProductMetadataInterface
-     */
-    private $magentoProductMetaData;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * EmailSenderHandler constructor.
-     *
-     * @param Config $config
-     * @param AsyncEmailRepositoryInterface $asyncEmailRepository
-     * @param TransportFactory $transportFactory
-     * @param MailMessageFactory $mailMessageFactory
-     * @param SendFlag $sendFlag
-     * @param LoggerInterface $logger
-     */
     public function __construct(
-        Config $config,
-        AsyncEmailRepositoryInterface $asyncEmailRepository,
-        TransportFactory $transportFactory,
-        MailMessageFactory $mailMessageFactory,
-        SendFlag $sendFlag,
-        ProductMetadataInterface $magentoProductMetaData,
-        LoggerInterface $logger
+        private readonly Config $config,
+        private readonly AsyncEmailRepositoryInterface $asyncEmailRepository,
+        private readonly TransportFactory $transportFactory,
+        private readonly MessageParserInterface $messageParser,
+        private readonly MessagePopulatorInterface $messagePopulator,
+        private readonly SendFlag $sendFlag,
+        private readonly LoggerInterface $logger
     ) {
-        $this->config = $config;
-        $this->asyncEmailRepository = $asyncEmailRepository;
-        $this->transportFactory = $transportFactory;
-        $this->mailMessageFactory = $mailMessageFactory;
-        $this->sendFlag = $sendFlag;
-        $this->magentoProductMetaData = $magentoProductMetaData;
-        $this->logger = $logger;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function sendEmails(): void
     {
-        if ($this->config->isEnabled() === false) {
+        if (!$this->config->isEnabled()) {
             return;
         }
 
         $items = $this->asyncEmailRepository->getPendingItems($this->config->getSendingLimit());
         $this->sendFlag->setIsSending(true);
+
         foreach ($items->getItems() as $item) {
             try {
-                $message = Message::fromString($item->getRawMessage())->setEncoding('utf-8');
-                /** @var MailMessage $mailMessage */
-                $mailMessage = $this->mailMessageFactory->create();
-
-                $body = $message->getBody();
-
-                if (version_compare($this->magentoProductMetaData->getVersion(), "2.3.3", ">=")) {
-                    $body = quoted_printable_decode($body);
-                }
-
-                $mailMessage
-                    ->setSubject($message->getSubject())
-                    ->setFrom($message->getFrom())
-                    ->setReplyTo($message->getReplyTo())
-                    ->addBcc($message->getBcc())
-                    ->addCc($message->getBcc())
-                    ->addTo($message->getTo())
-                    ->setMessageType($body != strip_tags($body) ? Mime::TYPE_HTML : Mime::TYPE_TEXT)
-                    ->setBody($body)
-                    ->setRawMessage($item->getRawMessage());
-
-                $transport = $this->transportFactory->create($mailMessage);
-                $transport->sendMessage();
-
-                $item->setStatus(1)->setSentAt(date('Y-m-d h:i:s'));
-                $this->asyncEmailRepository->save($item);
+                $this->processSingleEmail($item);
+                $this->markEmailAsSent($item);
             } catch (\Throwable $exception) {
-                $item->setStatus(2);
-                $this->logger->critical(
-                    'Error with ID: ' . $item->getEntId() . ' Message: ' . $exception->getMessage(),
-                    $exception->getTrace()
-                );
+                $this->handleEmailFailure($item, $exception);
             }
+        }
+    }
 
+    /**
+     * Process and send a single email item
+     *
+     * Parses the raw MIME message, properly decoding multipart content
+     * and transfer encodings (quoted-printable, base64), then converts
+     * to Symfony Message format for sending.
+     *
+     * @param mixed $item Email queue item
+     * @return void
+     * @throws \Exception If email processing fails
+     */
+    private function processSingleEmail($item): void
+    {
+        $rawMessageString = $item->getRawMessage();
+
+        // Parse raw message into ParsedMessage with headers and decoded parts
+        // This properly handles multipart MIME and decodes quoted-printable/base64
+        $parsedMessage = $this->messageParser->parse($rawMessageString);
+
+        // Create MailMessage from parsed message
+        $mailMessage = $this->messagePopulator->createMailMessage($parsedMessage);
+
+        // Set the raw message for reference
+        $mailMessage->setRawMessage($rawMessageString);
+
+        // Send email via transport
+        $transport = $this->transportFactory->create($mailMessage);
+        $transport->sendMessage();
+    }
+
+    /**
+     * Mark email as successfully sent
+     *
+     * @param mixed $item Email queue item
+     * @return void
+     * @throws CouldNotSaveException If save operation fails
+     */
+    private function markEmailAsSent($item): void
+    {
+        $item->setStatus(self::STATUS_SENT)
+            ->setSentAt(date('Y-m-d H:i:s'));
+        $this->asyncEmailRepository->save($item);
+    }
+
+    /**
+     * Handle email sending failure
+     *
+     * @param mixed $item Email queue item
+     * @param \Throwable $exception Exception that occurred
+     * @return void
+     */
+    private function handleEmailFailure($item, \Throwable $exception): void
+    {
+        $item->setStatus(self::STATUS_FAILED);
+
+        $this->logger->critical(
+            sprintf('Failed to send email ID: %s. Error: %s', $item->getEntId(), $exception->getMessage()),
+            ['exception' => $exception]
+        );
+
+        try {
             $this->asyncEmailRepository->save($item);
+        } catch (CouldNotSaveException $e) {
+            $this->logger->critical(
+                sprintf('Failed to save error status for email ID: %s', $item->getEntId()),
+                ['exception' => $e]
+            );
         }
     }
 }

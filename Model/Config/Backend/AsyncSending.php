@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -25,11 +25,6 @@ use Magento\Framework\Registry;
 class AsyncSending extends Value
 {
     /**
-     * @var WriterInterface
-     */
-    private $writer;
-
-    /**
      * AsyncSending constructor.
      *
      * @param Context $context
@@ -46,7 +41,7 @@ class AsyncSending extends Value
         Registry $registry,
         ScopeConfigInterface $config,
         TypeListInterface $cacheTypeList,
-        WriterInterface $writer,
+        private readonly WriterInterface $writer,
         ?AbstractResource $resource = null,
         ?AbstractDb $resourceCollection = null,
         array $data = []
@@ -60,8 +55,6 @@ class AsyncSending extends Value
             $resourceCollection,
             $data
         );
-
-        $this->writer = $writer;
     }
 
     /**

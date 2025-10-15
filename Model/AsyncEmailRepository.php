@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -33,52 +33,13 @@ use Magento\Framework\Mail\TransportInterface;
  */
 class AsyncEmailRepository implements AsyncEmailRepositoryInterface
 {
-    /**
-     * @var CollectionFactory
-     */
-    private $collectionFactory;
-
-    /**
-     * @var AsyncEmailInterfaceFactory
-     */
-    private $entityFactory;
-
-    /**
-     * @var AsyncEmailResource
-     */
-    private $resource;
-
-    /**
-     * @var AsyncEmailSearchResultsInterfaceFactory
-     */
-    private $searchResultFactory;
-
-    /**
-     * @var SearchCriteriaBuilder
-     */
-    private $searchCriteriaBuilder;
-
-    /**
-     * AsyncEmailRepository constructor.
-     *
-     * @param AsyncEmailResource $resource
-     * @param AsyncEmailInterfaceFactory $asyncEmailFactory
-     * @param CollectionFactory $collectionFactory
-     * @param AsyncEmailSearchResultsInterfaceFactory $searchResultFactory
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
-     */
     public function __construct(
-        AsyncEmailResource $resource,
-        AsyncEmailInterfaceFactory $asyncEmailFactory,
-        CollectionFactory $collectionFactory,
-        AsyncEmailSearchResultsInterfaceFactory $searchResultFactory,
-        SearchCriteriaBuilder $searchCriteriaBuilder
+        private readonly AsyncEmailResource $resource,
+        private readonly AsyncEmailInterfaceFactory $entityFactory,
+        private readonly CollectionFactory $collectionFactory,
+        private readonly AsyncEmailSearchResultsInterfaceFactory $searchResultFactory,
+        private readonly SearchCriteriaBuilder $searchCriteriaBuilder
     ) {
-        $this->resource = $resource;
-        $this->entityFactory = $asyncEmailFactory;
-        $this->collectionFactory = $collectionFactory;
-        $this->searchResultFactory = $searchResultFactory;
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
     }
 
     /**
@@ -101,16 +62,7 @@ class AsyncEmailRepository implements AsyncEmailRepositoryInterface
     public function saveTransport(TransportInterface $transport): AsyncEmailInterface
     {
         try {
-            // For >= 2.2
-            if (method_exists($transport, 'getMessage')) {
-                $asyncEmail = $this->save($this->populateAsyncEmail($transport->getMessage()));
-            } else {
-                // For < 2.2
-                $reflection = new \ReflectionClass($transport);
-                $property = $reflection->getProperty('_message');
-                $property->setAccessible(true);
-                $asyncEmail = $this->save($this->populateAsyncEmail($property->getValue($transport)));
-            }
+            $asyncEmail = $this->save($this->populateAsyncEmail($transport->getMessage()));
         } catch (Exception $exception) {
             throw new CouldNotSaveException(__($exception->getMessage()));
         }
@@ -252,10 +204,10 @@ class AsyncEmailRepository implements AsyncEmailRepositoryInterface
     }
 
     /**
-     * Clear
+     * Clear old emails by status
      *
-     * @param int $days
-     * @param int $status
+     * @param int $days Number of days to keep
+     * @param int $status Status to clear (AsyncEmailInterface::STATUS_ERROR or AsyncEmailInterface::STATUS_SENT)
      *
      * @throws \Hryvinskyi\AsynchronousEmailSending\Exception\InvalidStatusException
      */

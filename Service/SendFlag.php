@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -10,14 +10,14 @@ declare(strict_types=1);
 namespace Hryvinskyi\AsynchronousEmailSending\Service;
 
 /**
- * Class SendFlag
+ * Service to track if emails are currently being sent (prevents recursion)
  */
 class SendFlag
 {
     /**
-     * @var bool
+     * @var bool Flag indicating if email sending is in progress
      */
-    private $isSending = false;
+    private bool $isSending = false;
 
     /**
      * @return bool

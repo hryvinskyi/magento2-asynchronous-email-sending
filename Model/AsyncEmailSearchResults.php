@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -28,7 +28,7 @@ class AsyncEmailSearchResults extends SearchResult implements AsyncEmailSearchRe
     /**
      * {@inheritdoc}
      */
-    public function setItems(array $items = null): AsyncEmailSearchResultsInterface
+    public function setItems(?array $items = null): AsyncEmailSearchResultsInterface
     {
         parent::setData(self::ITEMS, $items);
 

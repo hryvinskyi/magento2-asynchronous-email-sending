@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
 <!--
-  ~ Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
-  ~ @author: <mailto:volodymyr@hryvinskyi.com>
-  ~ @github: <https://github.com/hryvinskyi>
-  -->
+/**
+ * Copyright (c) 2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Hryvinskyi\AsynchronousEmailSending\Api\Data\AsyncEmailInterface"
@@ -14,6 +16,14 @@
                 type="Hryvinskyi\AsynchronousEmailSending\Model\AsyncEmailSearchResults"/>
     <preference for="Hryvinskyi\AsynchronousEmailSending\Model\EmailSenderHandlerInterface"
                 type="Hryvinskyi\AsynchronousEmailSending\Model\EmailSenderHandler"/>
+    <preference for="Hryvinskyi\AsynchronousEmailSending\Api\Message\ParsedMessageInterface"
+                type="Hryvinskyi\AsynchronousEmailSending\Model\Message\ParsedMessage"/>
+    <preference for="Hryvinskyi\AsynchronousEmailSending\Api\Message\ParsedMessagePartInterface"
+                type="Hryvinskyi\AsynchronousEmailSending\Model\Message\ParsedMessagePart"/>
+    <preference for="Hryvinskyi\AsynchronousEmailSending\Api\Service\MessageParserInterface"
+                type="Hryvinskyi\AsynchronousEmailSending\Model\Service\MessageParser"/>
+    <preference for="Hryvinskyi\AsynchronousEmailSending\Api\Service\MessagePopulatorInterface"
+                type="Hryvinskyi\AsynchronousEmailSending\Model\Service\MessagePopulator"/>
 
     <type name="Hryvinskyi\AsynchronousEmailSending\Plugin\CatchAndSave">
         <arguments>
@@ -22,6 +32,12 @@
     </type>
 
     <type name="Hryvinskyi\AsynchronousEmailSending\Model\EmailSenderHandler">
+        <arguments>
+            <argument name="logger" xsi:type="object">Hryvinskyi\AsynchronousEmailSending\Model\Logger</argument>
+        </arguments>
+    </type>
+
+    <type name="Hryvinskyi\AsynchronousEmailSending\Model\Service\MessageParser">
         <arguments>
             <argument name="logger" xsi:type="object">Hryvinskyi\AsynchronousEmailSending\Model\Logger</argument>
         </arguments>
