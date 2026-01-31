@@ -13,8 +13,8 @@
              title="Async Email Queue"
              translate="title"
              module="Hryvinskyi_AsynchronousEmailSending"
-             parent="Magento_Backend::system"
-             sortOrder="100"
+             sortOrder="12"
+             parent="Magento_Backend::marketing_communications"
              resource="Hryvinskyi_AsynchronousEmailSending::email_queue"
              action="hryvinskyi_asyncemail/email/index"/>
     </menu>
