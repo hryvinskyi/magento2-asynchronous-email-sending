@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Copyright (c) 2020-2026. Volodymyr Hryvinskyi. All rights reserved.
  * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
  * GitHub: https://github.com/hryvinskyi
  */
@@ -14,34 +14,25 @@ use Magento\Framework\Logger\Handler\Base;
 use Monolog\LogRecord;
 
 /**
- * Class Debug
+ * Debug logger handler for asynchronous email sending
  */
 class Debug extends Base
 {
     /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * Debug constructor.
-     *
      * @param DriverInterface $filesystem
      * @param Config $config
-     * @param null $filePath
+     * @param string|null $filePath
      * @param string $fileName
      *
      * @throws \Exception
      */
     public function __construct(
         DriverInterface $filesystem,
-        Config $config,
-        $filePath = null,
-        $fileName = '/var/log/asynchronous_email_sending.log'
+        private readonly Config $config,
+        ?string $filePath = null,
+        string $fileName = '/var/log/asynchronous_email_sending.log'
     ) {
         parent::__construct($filesystem, $filePath, $fileName);
-
-        $this->config = $config;
     }
 
     /**

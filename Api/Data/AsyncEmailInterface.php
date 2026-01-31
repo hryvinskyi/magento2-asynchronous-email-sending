@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -19,19 +19,19 @@ interface AsyncEmailInterface
     /**
      * Statuses
      */
-    const STATUS_PENDING = 0;
-    const STATUS_SENT = 1;
-    const STATUS_ERROR = 2;
+    public const int STATUS_PENDING = 0;
+    public const int STATUS_SENT = 1;
+    public const int STATUS_ERROR = 2;
 
     /**#@+
      * Constants for keys of data array.
      */
-    const ENTITY_ID = 'entity_id';
-    const STATUS = 'status';
-    const SUBJECT = 'subject';
-    const RAW_MESSAGE = 'raw_message';
-    const CREATED_AT = 'created_at';
-    const SENT_AT = 'sent_at';
+    public const string ENTITY_ID = 'entity_id';
+    public const string STATUS = 'status';
+    public const string SUBJECT = 'subject';
+    public const string RAW_MESSAGE = 'raw_message';
+    public const string CREATED_AT = 'created_at';
+    public const string SENT_AT = 'sent_at';
     /**#@-*/
 
     /**
@@ -44,11 +44,11 @@ interface AsyncEmailInterface
     /**
      * Set EntityId value
      *
-     * @param int $entity_id
+     * @param int $entityId
      *
      * @return $this
      */
-    public function setEntId(int $entity_id): AsyncEmailInterface;
+    public function setEntId(int $entityId): AsyncEmailInterface;
 
     /**
      * Get Status value
@@ -92,11 +92,11 @@ interface AsyncEmailInterface
     /**
      * Set RawMessage value
      *
-     * @param string $raw_message
+     * @param string $rawMessage
      *
      * @return $this
      */
-    public function setRawMessage(string $raw_message): AsyncEmailInterface;
+    public function setRawMessage(string $rawMessage): AsyncEmailInterface;
 
     /**
      * Get CreatedAt value
@@ -106,13 +106,13 @@ interface AsyncEmailInterface
     public function getCreatedAt(): string;
 
     /**
-     * Set CreatedAt value. Mysql Date Time Format: Y-m-d h:i:s
+     * Set CreatedAt value. Mysql Date Time Format: Y-m-d H:i:s
      *
-     * @param string $created_at
+     * @param string $createdAt
      *
      * @return $this
      */
-    public function setCreatedAt(string $created_at): AsyncEmailInterface;
+    public function setCreatedAt(string $createdAt): AsyncEmailInterface;
 
     /**
      * Get SentAt value
@@ -122,11 +122,11 @@ interface AsyncEmailInterface
     public function getSentAt(): string;
 
     /**
-     * Set SentAt value. Mysql Date Time Format: Y-m-d h:i:s
+     * Set SentAt value. Mysql Date Time Format: Y-m-d H:i:s
      *
-     * @param string $sent_at
+     * @param string $sentAt
      *
      * @return $this
      */
-    public function setSentAt(string $sent_at): AsyncEmailInterface;
+    public function setSentAt(string $sentAt): AsyncEmailInterface;
 }

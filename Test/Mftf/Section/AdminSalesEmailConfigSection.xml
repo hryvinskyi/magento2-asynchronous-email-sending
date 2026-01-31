@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<sections xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="urn:magento:mftf:Page/etc/SectionObject.xsd">
+    <section name="AdminSalesEmailConfigSection">
+        <element name="salesEmailTab" type="button" selector="#system_config_tabs a[id*='sales_email']" timeout="30"/>
+        <element name="generalHeader" type="button" selector="#sales_email_general-head" timeout="30"/>
+        <element name="asyncSendingField" type="select" selector="#sales_email_general_async_sending"/>
+        <element name="asyncSendingFieldDisabled" type="text" selector="#sales_email_general_async_sending[disabled]"/>
+        <element name="asyncSendingNote" type="text" selector="#row_sales_email_general_async_sending .note"/>
+    </section>
+</sections>

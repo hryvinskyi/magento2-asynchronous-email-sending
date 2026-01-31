@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AsyncEmailQueuedOnContactFormTest">
+        <annotations>
+            <features value="AsynchronousEmailSending"/>
+            <stories value="Contact form email is queued when module is enabled"/>
+            <title value="Contact form submission queues email instead of sending immediately"/>
+            <description value="Verify that when a customer submits the contact form and module is enabled, the email is saved to the queue table."/>
+            <severity value="CRITICAL"/>
+            <testCaseId value="ASYNC-EMAIL-012"/>
+            <group value="hryvinskyi"/>
+            <group value="asynchronous_email_sending"/>
+            <group value="email_queue"/>
+        </annotations>
+
+        <before>
+            <actionGroup ref="AdminLoginActionGroup" stepKey="loginAsAdmin"/>
+            <!-- Disable CAPTCHA -->
+            <magentoCLI command="config:set customer/captcha/enable 0" stepKey="disableCaptcha"/>
+            <actionGroup ref="CliCacheCleanActionGroup" stepKey="cleanCache">
+                <argument name="tags" value="config"/>
+            </actionGroup>
+            <!-- Enable the async email module -->
+            <actionGroup ref="AdminEnableAsyncEmailSendingActionGroup" stepKey="enableModule"/>
+            <!-- Clear the email queue -->
+            <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="clearEmailQueue" stepKey="clearEmailQueue"/>
+        </before>
+
+        <after>
+            <!-- Re-enable CAPTCHA -->
+            <magentoCLI command="config:set customer/captcha/enable 1" stepKey="enableCaptcha"/>
+            <!-- Clear queue -->
+            <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="clearEmailQueue" stepKey="clearEmailQueueAfter"/>
+            <!-- Disable module -->
+            <actionGroup ref="AdminDisableAsyncEmailSendingActionGroup" stepKey="disableModule"/>
+            <actionGroup ref="AdminLogoutActionGroup" stepKey="logoutFromAdmin"/>
+        </after>
+
+        <!-- Navigate to contact page -->
+        <amOnPage url="{{StorefrontContactUsPage.url}}" stepKey="goToContactPage"/>
+        <waitForPageLoad stepKey="waitForContactPage"/>
+
+        <!-- Fill and submit contact form using Magento core section elements -->
+        <fillField selector="{{StorefrontContactUsFormSection.nameField}}" userInput="Test Customer" stepKey="fillName"/>
+        <fillField selector="{{StorefrontContactUsFormSection.emailField}}" userInput="test@example.com" stepKey="fillEmail"/>
+        <fillField selector="{{StorefrontContactUsFormSection.phoneField}}" userInput="1234567890" stepKey="fillPhone"/>
+        <fillField selector="{{StorefrontContactUsFormSection.commentField}}" userInput="This is a test message for async email testing." stepKey="fillComment"/>
+        <click selector="{{StorefrontContactUsFormSection.submitFormButton}}" stepKey="submitForm"/>
+        <waitForPageLoad stepKey="waitForSubmit"/>
+
+        <!-- Verify success message -->
+        <see userInput="Thanks for contacting us" stepKey="seeSuccessMessage"/>
+
+        <!-- Verify email was queued -->
+        <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="assertHasPendingEmails" stepKey="assertEmailQueued"/>
+    </test>
+</tests>

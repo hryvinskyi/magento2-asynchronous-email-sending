@@ -1,0 +1,189 @@
+<?php
+/**
+ * Copyright (c) 2025-2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+
+declare(strict_types=1);
+
+use Hryvinskyi\AsynchronousEmailSending\Block\Adminhtml\Email\View;
+use Magento\Framework\Escaper;
+
+/** @var View $block */
+/** @var Escaper $escaper */
+
+$email = $block->getEmail();
+
+if ($email === null): ?>
+    <div class="message message-error">
+        <?= $escaper->escapeHtml(__('Email not found.')) ?>
+    </div>
+<?php return;
+endif;
+
+$headers = $block->getParsedHeaders();
+?>
+
+<style>
+    .async-email-view {
+        background: #ffffff;
+        border: 1px solid #e3e3e3;
+        border-radius: 4px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .async-email-view .email-header {
+        border-bottom: 1px solid #e3e3e3;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+    .async-email-view .email-header h2 {
+        color: #4a3f39;
+        margin: 0 0 10px 0;
+        font-size: 18px;
+    }
+    .async-email-view .email-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .async-email-view .info-item {
+        background: #f5f5f5;
+        padding: 10px 15px;
+        border-radius: 4px;
+    }
+    .async-email-view .info-item label {
+        display: block;
+        font-size: 12px;
+        color: #666666;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+    }
+    .async-email-view .info-item span {
+        font-size: 14px;
+        color: #4a3f39;
+        font-weight: 500;
+    }
+    .async-email-view .email-headers {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    .async-email-view .email-headers h3 {
+        color: #4a3f39;
+        margin: 0 0 15px 0;
+        font-size: 14px;
+        text-transform: uppercase;
+    }
+    .async-email-view .email-headers table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .async-email-view .email-headers td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #e3e3e3;
+        font-size: 13px;
+    }
+    .async-email-view .email-headers td:first-child {
+        width: 150px;
+        color: #666666;
+        font-weight: 500;
+    }
+    .async-email-view .email-headers td:last-child {
+        color: #4a3f39;
+        word-break: break-all;
+    }
+    .async-email-view .email-headers tr:last-child td {
+        border-bottom: none;
+    }
+    .async-email-view .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .async-email-view .status-pending {
+        background: #fff1ad;
+        color: #4a3f39;
+    }
+    .async-email-view .status-sent {
+        background: #79a22e;
+        color: #ffffff;
+    }
+    .async-email-view .status-error {
+        background: #eb5202;
+        color: #ffffff;
+    }
+    .async-email-view .email-content {
+        margin-bottom: 20px;
+    }
+    .async-email-view .email-content h3 {
+        color: #4a3f39;
+        margin: 0 0 15px 0;
+        font-size: 14px;
+        text-transform: uppercase;
+    }
+</style>
+
+<div class="async-email-view">
+    <div class="email-header">
+        <h2><?= $escaper->escapeHtml($email->getSubject()) ?></h2>
+        <?php
+        $statusClass = match ($email->getStatus()) {
+            0 => 'status-pending',
+            1 => 'status-sent',
+            2 => 'status-error',
+            default => 'status-pending'
+        };
+        ?>
+        <span class="status-badge <?= $escaper->escapeHtmlAttr($statusClass) ?>">
+            <?= $escaper->escapeHtml($block->getStatusLabel()) ?>
+        </span>
+    </div>
+
+    <div class="email-info">
+        <div class="info-item">
+            <label><?= $escaper->escapeHtml(__('ID')) ?></label>
+            <span><?= (int)$email->getEntId() ?></span>
+        </div>
+        <div class="info-item">
+            <label><?= $escaper->escapeHtml(__('Created At')) ?></label>
+            <span><?= $escaper->escapeHtml($email->getCreatedAt()) ?></span>
+        </div>
+        <div class="info-item">
+            <label><?= $escaper->escapeHtml(__('Sent At')) ?></label>
+            <span><?= $escaper->escapeHtml($email->getSentAt() ?: '-') ?></span>
+        </div>
+    </div>
+
+    <?php if (!empty($headers)): ?>
+        <div class="email-headers">
+            <h3><?= $escaper->escapeHtml(__('Email Headers')) ?></h3>
+            <table>
+                <?php foreach ($headers as $name => $value): ?>
+                    <tr>
+                        <td><?= $escaper->escapeHtml($name) ?></td>
+                        <td><?= $escaper->escapeHtml($value) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
+        </div>
+    <?php endif; ?>
+
+    <div class="email-content">
+        <h3><?= $escaper->escapeHtml(__('Email Content')) ?></h3>
+        <iframe loading="lazy"
+                width="100%"
+                height="700px"
+                style="border: 1px solid #e3e3e3; border-radius: 4px; background: #ffffff;"
+                src="<?= $escaper->escapeUrl(
+                    $block->getUrl('hryvinskyi_asyncemail/email/viewContent', ['entity_id' => $email->getEntId()])
+                ) ?>"></iframe>
+    </div>
+
+</div>

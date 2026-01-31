@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AsyncEmailQueuedOnCustomerRegistrationTest">
+        <annotations>
+            <features value="AsynchronousEmailSending"/>
+            <stories value="Email is queued instead of sent immediately when module is enabled"/>
+            <title value="Welcome email is queued when customer registers with module enabled"/>
+            <description value="Verify that when a customer registers and module is enabled, the welcome email is saved to the queue table instead of being sent immediately."/>
+            <severity value="CRITICAL"/>
+            <testCaseId value="ASYNC-EMAIL-010"/>
+            <group value="hryvinskyi"/>
+            <group value="asynchronous_email_sending"/>
+            <group value="email_queue"/>
+        </annotations>
+
+        <before>
+            <actionGroup ref="AdminLoginActionGroup" stepKey="loginAsAdmin"/>
+            <!-- Disable CAPTCHA -->
+            <magentoCLI command="config:set customer/captcha/enable 0" stepKey="disableCaptcha"/>
+            <actionGroup ref="CliCacheCleanActionGroup" stepKey="cleanCache">
+                <argument name="tags" value="config"/>
+            </actionGroup>
+            <!-- Enable the async email module -->
+            <actionGroup ref="AdminEnableAsyncEmailSendingActionGroup" stepKey="enableModule"/>
+            <!-- Clear the email queue -->
+            <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="clearEmailQueue" stepKey="clearEmailQueue"/>
+        </before>
+
+        <after>
+            <!-- Re-enable CAPTCHA -->
+            <magentoCLI command="config:set customer/captcha/enable 1" stepKey="enableCaptcha"/>
+            <!-- Clean up: delete test customer via helper -->
+            <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="deleteCustomerByEmail" stepKey="deleteCustomer">
+                <argument name="email">{{CustomerEntityOne.email}}</argument>
+            </helper>
+            <!-- Clear queue -->
+            <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="clearEmailQueue" stepKey="clearEmailQueueAfter"/>
+            <!-- Disable module -->
+            <actionGroup ref="AdminDisableAsyncEmailSendingActionGroup" stepKey="disableModule"/>
+            <actionGroup ref="AdminLogoutActionGroup" stepKey="logoutFromAdmin"/>
+        </after>
+
+        <!-- Register a new customer on storefront -->
+        <actionGroup ref="StorefrontOpenCustomerAccountCreatePageActionGroup" stepKey="openCreateAccountPage"/>
+        <actionGroup ref="StorefrontFillCustomerAccountCreationFormActionGroup" stepKey="fillCreateAccountForm">
+            <argument name="customer" value="CustomerEntityOne"/>
+        </actionGroup>
+        <actionGroup ref="StorefrontClickCreateAnAccountCustomerAccountCreationFormActionGroup" stepKey="submitCreateAccountForm"/>
+        <actionGroup ref="AssertMessageCustomerCreateAccountActionGroup" stepKey="seeSuccessMessage">
+            <argument name="messageType" value="success"/>
+            <argument name="message" value="Thank you for registering with Main Website Store."/>
+        </actionGroup>
+
+        <!-- Verify email was queued (not sent) by checking database -->
+        <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="assertHasPendingEmails" stepKey="assertEmailQueued"/>
+
+        <!-- Verify the email subject contains welcome message -->
+        <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="assertPendingEmailWithSubject" stepKey="assertWelcomeSubject">
+            <argument name="subjectPattern">Welcome</argument>
+        </helper>
+    </test>
+</tests>

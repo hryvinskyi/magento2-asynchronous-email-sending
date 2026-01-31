@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AsyncEmailBypassedWhenDisabledTest">
+        <annotations>
+            <features value="AsynchronousEmailSending"/>
+            <stories value="Email is sent immediately when module is disabled"/>
+            <title value="Email is NOT queued when module is disabled"/>
+            <description value="Verify that when the module is disabled, emails are sent immediately and NOT added to the queue."/>
+            <severity value="CRITICAL"/>
+            <testCaseId value="ASYNC-EMAIL-013"/>
+            <group value="hryvinskyi"/>
+            <group value="asynchronous_email_sending"/>
+            <group value="email_queue"/>
+        </annotations>
+
+        <before>
+            <actionGroup ref="AdminLoginActionGroup" stepKey="loginAsAdmin"/>
+            <!-- Disable CAPTCHA for forgot password -->
+            <magentoCLI command="config:set customer/captcha/enable 0" stepKey="disableCaptcha"/>
+            <!-- Disable password reset rate limiting (0 = None/Disabled) -->
+            <magentoCLI command="config:set customer/password/password_reset_protection_type 0" stepKey="disableRateLimiting"/>
+            <actionGroup ref="CliCacheCleanActionGroup" stepKey="cleanCache">
+                <argument name="tags" value="config"/>
+            </actionGroup>
+            <!-- Create a customer first via API -->
+            <createData entity="Simple_US_Customer" stepKey="createCustomer"/>
+            <!-- Ensure module is DISABLED -->
+            <actionGroup ref="AdminDisableAsyncEmailSendingActionGroup" stepKey="disableModule"/>
+            <!-- Clear the email queue -->
+            <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="clearEmailQueue" stepKey="clearEmailQueue"/>
+        </before>
+
+        <after>
+            <!-- Re-enable CAPTCHA -->
+            <magentoCLI command="config:set customer/captcha/enable 1" stepKey="enableCaptcha"/>
+            <!-- Re-enable password reset rate limiting (1 = By IP and Email) -->
+            <magentoCLI command="config:set customer/password/password_reset_protection_type 1" stepKey="enableRateLimiting"/>
+            <!-- Delete customer -->
+            <deleteData createDataKey="createCustomer" stepKey="deleteCustomer"/>
+            <actionGroup ref="AdminLogoutActionGroup" stepKey="logoutFromAdmin"/>
+        </after>
+
+        <!-- Trigger a password reset email (module is disabled, should NOT be queued) -->
+        <amOnPage url="{{StorefrontForgotPasswordPage.url}}" stepKey="goToForgotPasswordPage"/>
+        <waitForPageLoad stepKey="waitForForgotPasswordPage"/>
+        <waitForElementVisible selector="{{StorefrontForgotPasswordSection.email}}" stepKey="waitForEmailField"/>
+        <fillField selector="{{StorefrontForgotPasswordSection.email}}" userInput="$$createCustomer.email$$" stepKey="fillEmail"/>
+        <waitForElementClickable selector="{{StorefrontForgotPasswordSection.resetMyPasswordButton}}" stepKey="waitForButton"/>
+        <click selector="{{StorefrontForgotPasswordSection.resetMyPasswordButton}}" stepKey="clickResetPassword"/>
+        <waitForPageLoad stepKey="waitForReset"/>
+
+        <!-- Verify success message (use partial text match) -->
+        <waitForText userInput="you will receive an email" time="30" stepKey="waitForSuccessMessage"/>
+
+        <!-- Verify email was NOT queued (queue should be empty since module is disabled) -->
+        <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="assertQueueIsEmpty" stepKey="assertQueueEmpty"/>
+    </test>
+</tests>

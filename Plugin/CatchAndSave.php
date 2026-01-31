@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Copyright (c) 2020-2026. Volodymyr Hryvinskyi. All rights reserved.
  * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
  * GitHub: https://github.com/hryvinskyi
  */
@@ -50,7 +50,7 @@ class CatchAndSave
         try {
             $this->asyncEmailRepository->saveTransport($subject);
         } catch (\Throwable $e) {
-            $this->logger->critical($e->getMessage(), $e->getTrace());
+            $this->logger->critical($e->getMessage(), ['exception' => $e]);
             return $proceed();
         }
     }

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<actionGroups xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/actionGroupSchema.xsd">
+    <actionGroup name="AdminDisableAsyncEmailSendingActionGroup">
+        <annotations>
+            <description>Navigates to config and disables the Asynchronous Email Sending module.</description>
+        </annotations>
+
+        <!-- Navigate to config page -->
+        <amOnPage url="{{AdminAsyncEmailSendingConfigPage.url}}" stepKey="navigateToAsyncEmailConfig"/>
+        <waitForPageLoad stepKey="waitForConfigPageLoad"/>
+        <conditionalClick selector="{{AdminAsyncEmailSendingConfigSection.generalSettingsHeader}}"
+                          dependentSelector="{{AdminAsyncEmailSendingConfigSection.enabledField}}"
+                          visible="false"
+                          stepKey="expandGeneralSettings"/>
+        <waitForElementVisible selector="{{AdminAsyncEmailSendingConfigSection.enabledField}}" stepKey="waitForEnabledField"/>
+
+        <!-- Disable and save -->
+        <selectOption selector="{{AdminAsyncEmailSendingConfigSection.enabledField}}" userInput="0" stepKey="disableAsyncEmailSending"/>
+        <click selector="{{AdminAsyncEmailSendingConfigSection.saveConfigButton}}" stepKey="saveConfig"/>
+        <waitForPageLoad stepKey="waitForSave"/>
+        <see selector="{{AdminAsyncEmailSendingConfigSection.successMessage}}" userInput="You saved the configuration." stepKey="seeSuccessMessage"/>
+    </actionGroup>
+</actionGroups>

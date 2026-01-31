@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Copyright (c) 2020-2026. Volodymyr Hryvinskyi. All rights reserved.
  * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
  * GitHub: https://github.com/hryvinskyi
  */
@@ -87,7 +87,7 @@ class AsyncEmailRepository implements AsyncEmailRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function getById($asyncEmailId)
+    public function getById(int $asyncEmailId): AsyncEmailInterface
     {
         $asyncEmail = $this->entityFactory->create();
         $this->resource->load($asyncEmail, $asyncEmailId);
@@ -101,7 +101,7 @@ class AsyncEmailRepository implements AsyncEmailRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function findById($asyncEmailId)
+    public function findById(int $asyncEmailId): ?AsyncEmailInterface
     {
         $asyncEmail = $this->entityFactory->create();
         $this->resource->load($asyncEmail, $asyncEmailId);
@@ -148,7 +148,7 @@ class AsyncEmailRepository implements AsyncEmailRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function delete(AsyncEmailInterface $asyncEmail)
+    public function delete(AsyncEmailInterface $asyncEmail): bool
     {
         try {
             $this->resource->delete($asyncEmail);
@@ -162,7 +162,7 @@ class AsyncEmailRepository implements AsyncEmailRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function deleteById($asyncEmailId)
+    public function deleteById(int $asyncEmailId): bool
     {
         return $this->delete($this->getById($asyncEmailId));
     }
@@ -195,10 +195,7 @@ class AsyncEmailRepository implements AsyncEmailRepositoryInterface
         }
 
         $subject = $message->getSubject();
-
-        if (function_exists('imap_utf8')) {
-            $subject = imap_utf8($subject);
-        }
+        $subject = mb_decode_mimeheader($subject);
 
         return $entity->setRawMessage((string)$rawContent)->setSubject($subject);
     }

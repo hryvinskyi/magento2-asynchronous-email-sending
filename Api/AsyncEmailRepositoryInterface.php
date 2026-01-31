@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -51,21 +51,21 @@ interface AsyncEmailRepositoryInterface
     /**
      * Get AsyncEmail by id.
      *
-     * @param int $entity_id
+     * @param int $asyncEmailId
      *
      * @return AsyncEmailInterface
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function getById(int $entity_id);
+    public function getById(int $asyncEmailId): AsyncEmailInterface;
 
     /**
      * Find AsyncEmail by id.
      *
-     * @param int $entity_id
+     * @param int $asyncEmailId
      *
      * @return AsyncEmailInterface|null
      */
-    public function findById(int $entity_id);
+    public function findById(int $asyncEmailId): ?AsyncEmailInterface;
 
     /**
      * Retrieve AsyncEmail matching the specified criteria.
@@ -85,7 +85,7 @@ interface AsyncEmailRepositoryInterface
      * @return bool
      * @throws \Magento\Framework\Exception\CouldNotDeleteException
      */
-    public function delete(AsyncEmailInterface $asyncEmail);
+    public function delete(AsyncEmailInterface $asyncEmail): bool;
 
     /**
      * Delete AsyncEmail by ID.
@@ -96,5 +96,5 @@ interface AsyncEmailRepositoryInterface
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\CouldNotDeleteException
      */
-    public function deleteById($asyncEmailId);
+    public function deleteById(int $asyncEmailId): bool;
 }

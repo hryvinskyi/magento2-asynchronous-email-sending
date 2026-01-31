@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AsyncEmailSentByCronTest">
+        <annotations>
+            <features value="AsynchronousEmailSending"/>
+            <stories value="Queued emails are sent when cron runs"/>
+            <title value="Cron job processes and sends queued emails"/>
+            <description value="Verify that when the cron job runs, pending emails in the queue are sent and their status changes to sent."/>
+            <severity value="CRITICAL"/>
+            <testCaseId value="ASYNC-EMAIL-011"/>
+            <group value="hryvinskyi"/>
+            <group value="asynchronous_email_sending"/>
+            <group value="email_queue"/>
+        </annotations>
+
+        <before>
+            <actionGroup ref="AdminLoginActionGroup" stepKey="loginAsAdmin"/>
+            <!-- Disable CAPTCHA -->
+            <magentoCLI command="config:set customer/captcha/enable 0" stepKey="disableCaptcha"/>
+            <!-- Disable password reset rate limiting -->
+            <magentoCLI command="config:set customer/password/password_reset_protection_type 0" stepKey="disableRateLimiting"/>
+            <actionGroup ref="CliCacheCleanActionGroup" stepKey="cleanCache">
+                <argument name="tags" value="config"/>
+            </actionGroup>
+            <!-- Enable the async email module -->
+            <actionGroup ref="AdminEnableAsyncEmailSendingActionGroup" stepKey="enableModule"/>
+            <!-- Clear the email queue -->
+            <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="clearEmailQueue" stepKey="clearEmailQueue"/>
+            <!-- Create test customer -->
+            <createData entity="Simple_US_Customer" stepKey="createCustomer"/>
+        </before>
+
+        <after>
+            <!-- Re-enable CAPTCHA -->
+            <magentoCLI command="config:set customer/captcha/enable 1" stepKey="enableCaptcha"/>
+            <!-- Re-enable password reset rate limiting -->
+            <magentoCLI command="config:set customer/password/password_reset_protection_type 1" stepKey="enableRateLimiting"/>
+            <!-- Delete customer -->
+            <deleteData createDataKey="createCustomer" stepKey="deleteCustomer"/>
+            <!-- Clear queue -->
+            <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="clearEmailQueue" stepKey="clearEmailQueueAfter"/>
+            <!-- Disable module -->
+            <actionGroup ref="AdminDisableAsyncEmailSendingActionGroup" stepKey="disableModule"/>
+            <actionGroup ref="AdminLogoutActionGroup" stepKey="logoutFromAdmin"/>
+        </after>
+
+        <!-- Trigger a password reset email (goes to queue) using Magento core page/section -->
+        <amOnPage url="{{StorefrontForgotPasswordPage.url}}" stepKey="goToForgotPasswordPage"/>
+        <waitForPageLoad stepKey="waitForForgotPasswordPage"/>
+        <fillField selector="{{StorefrontForgotPasswordSection.email}}" userInput="$$createCustomer.email$$" stepKey="fillEmail"/>
+        <click selector="{{StorefrontForgotPasswordSection.resetMyPasswordButton}}" stepKey="clickResetPassword"/>
+        <waitForPageLoad stepKey="waitForReset"/>
+
+        <!-- Verify the request was successful -->
+        <see userInput="If there is an account associated with" stepKey="seeSuccessMessage"/>
+
+        <!-- Verify email is in pending status -->
+        <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="assertHasPendingEmails" stepKey="assertEmailPending"/>
+
+        <!-- Run the email sending cron job -->
+        <magentoCLI command="hryvinskyi:email:send" stepKey="runEmailCron"/>
+        <wait time="5" stepKey="waitForCron"/>
+
+        <!-- Verify email status changed to sent -->
+        <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="assertHasSentEmails" stepKey="assertEmailSent"/>
+
+        <!-- Verify no pending emails remain -->
+        <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="assertNoPendingEmails" stepKey="assertNoPending"/>
+    </test>
+</tests>

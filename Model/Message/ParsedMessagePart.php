@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Copyright (c) 2025-2026. Volodymyr Hryvinskyi. All rights reserved.
  * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
  * GitHub: https://github.com/hryvinskyi
  */
@@ -33,8 +33,8 @@ class ParsedMessagePart implements ParsedMessagePartInterface
      * @param bool $isAttachment Whether this part is an attachment
      */
     public function __construct(
-        string $content,
-        string $contentType,
+        string $content = '',
+        string $contentType = 'text/html',
         string $charset = 'utf-8',
         ?string $filename = null,
         bool $isAttachment = false

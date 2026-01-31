@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<sections xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="urn:magento:mftf:Page/etc/SectionObject.xsd">
+    <section name="AdminAsyncEmailSendingConfigSection">
+        <element name="hryvinskyiTab" type="button" selector="#system_config_tabs .config-nav-block a[id*='hryvinskyi']" timeout="30"/>
+        <element name="asyncEmailSendingSection" type="button" selector="#system_config_tabs a[id*='hryvinskyi_asynchronous_sending']" timeout="30"/>
+        <element name="generalSettingsHeader" type="button" selector="#hryvinskyi_asynchronous_sending_general-head" timeout="30"/>
+        <element name="generalSettingsContent" type="block" selector="#hryvinskyi_asynchronous_sending_general"/>
+
+        <!-- Enable Field -->
+        <element name="enabledField" type="select" selector="#hryvinskyi_asynchronous_sending_general_enabled"/>
+        <element name="enabledFieldInherit" type="checkbox" selector="#hryvinskyi_asynchronous_sending_general_enabled_inherit"/>
+
+        <!-- Sending Limit Field -->
+        <element name="sendingLimitField" type="input" selector="#hryvinskyi_asynchronous_sending_general_sending_limit"/>
+        <element name="sendingLimitFieldInherit" type="checkbox" selector="#hryvinskyi_asynchronous_sending_general_sending_limit_inherit"/>
+        <element name="sendingLimitFieldError" type="text" selector="#hryvinskyi_asynchronous_sending_general_sending_limit-error"/>
+
+        <!-- Clear Success After Days Field -->
+        <element name="clearSuccessAfterDaysField" type="input" selector="#hryvinskyi_asynchronous_sending_general_clear_success_after_days"/>
+        <element name="clearSuccessAfterDaysFieldInherit" type="checkbox" selector="#hryvinskyi_asynchronous_sending_general_clear_success_after_days_inherit"/>
+        <element name="clearSuccessAfterDaysFieldError" type="text" selector="#hryvinskyi_asynchronous_sending_general_clear_success_after_days-error"/>
+
+        <!-- Clear Errors After Days Field -->
+        <element name="clearErrorsAfterDaysField" type="input" selector="#hryvinskyi_asynchronous_sending_general_clear_errors_after_days"/>
+        <element name="clearErrorsAfterDaysFieldInherit" type="checkbox" selector="#hryvinskyi_asynchronous_sending_general_clear_errors_after_days_inherit"/>
+        <element name="clearErrorsAfterDaysFieldError" type="text" selector="#hryvinskyi_asynchronous_sending_general_clear_errors_after_days-error"/>
+
+        <!-- Debug Field -->
+        <element name="debugField" type="select" selector="#hryvinskyi_asynchronous_sending_general_debug"/>
+        <element name="debugFieldInherit" type="checkbox" selector="#hryvinskyi_asynchronous_sending_general_debug_inherit"/>
+
+        <!-- Save Button -->
+        <element name="saveConfigButton" type="button" selector="#save"/>
+        <element name="successMessage" type="text" selector="div.message-success"/>
+    </section>
+</sections>

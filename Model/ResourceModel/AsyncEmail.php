@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2020-2025. Volodymyr Hryvinskyi. All rights reserved.
+ * Copyright (c) 2020-2026. Volodymyr Hryvinskyi. All rights reserved.
  * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
  * GitHub: https://github.com/hryvinskyi
  */
@@ -38,7 +38,7 @@ class AsyncEmail extends AbstractDb
             throw new InvalidStatusException(__('Status invalid'));
         }
 
-        $date = date('Y-m-d h:i:s', strtotime('-' . $days . 'days'));
+        $date = date('Y-m-d H:i:s', strtotime('-' . $days . ' days'));
 
         $this->getConnection()->delete(
             $this->getMainTable(),

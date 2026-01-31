@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<actionGroups xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/actionGroupSchema.xsd">
+    <actionGroup name="AdminAssertAsyncEmailSendingConfigActionGroup">
+        <annotations>
+            <description>Asserts the Asynchronous Email Sending module configuration values in admin.</description>
+        </annotations>
+        <arguments>
+            <argument name="enabled" type="string" defaultValue="1"/>
+            <argument name="sendingLimit" type="string" defaultValue="50"/>
+            <argument name="clearSuccessAfterDays" type="string" defaultValue="30"/>
+            <argument name="clearErrorsAfterDays" type="string" defaultValue="60"/>
+            <argument name="debug" type="string" defaultValue="0"/>
+        </arguments>
+
+        <seeOptionIsSelected selector="{{AdminAsyncEmailSendingConfigSection.enabledField}}" userInput="{{enabled}}" stepKey="assertEnabledValue"/>
+        <grabValueFrom selector="{{AdminAsyncEmailSendingConfigSection.sendingLimitField}}" stepKey="grabSendingLimit"/>
+        <assertEquals stepKey="assertSendingLimitValue">
+            <actualResult type="variable">grabSendingLimit</actualResult>
+            <expectedResult type="string">{{sendingLimit}}</expectedResult>
+        </assertEquals>
+        <grabValueFrom selector="{{AdminAsyncEmailSendingConfigSection.clearSuccessAfterDaysField}}" stepKey="grabClearSuccessAfterDays"/>
+        <assertEquals stepKey="assertClearSuccessAfterDaysValue">
+            <actualResult type="variable">grabClearSuccessAfterDays</actualResult>
+            <expectedResult type="string">{{clearSuccessAfterDays}}</expectedResult>
+        </assertEquals>
+        <grabValueFrom selector="{{AdminAsyncEmailSendingConfigSection.clearErrorsAfterDaysField}}" stepKey="grabClearErrorsAfterDays"/>
+        <assertEquals stepKey="assertClearErrorsAfterDaysValue">
+            <actualResult type="variable">grabClearErrorsAfterDays</actualResult>
+            <expectedResult type="string">{{clearErrorsAfterDays}}</expectedResult>
+        </assertEquals>
+        <seeOptionIsSelected selector="{{AdminAsyncEmailSendingConfigSection.debugField}}" userInput="{{debug}}" stepKey="assertDebugValue"/>
+    </actionGroup>
+</actionGroups>

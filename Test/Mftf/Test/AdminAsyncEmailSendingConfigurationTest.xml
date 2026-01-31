@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AdminAsyncEmailSendingConfigurationTest">
+        <annotations>
+            <features value="AsynchronousEmailSending"/>
+            <stories value="Admin configures Asynchronous Email Sending module"/>
+            <title value="Admin can configure all Asynchronous Email Sending settings"/>
+            <description value="Comprehensive test covering: enable/disable toggle, all settings configuration, field validation, dependent field visibility, and Magento native async email interaction."/>
+            <severity value="CRITICAL"/>
+            <testCaseId value="ASYNC-EMAIL-CONFIG-001"/>
+            <group value="hryvinskyi"/>
+            <group value="asynchronous_email_sending"/>
+            <group value="configuration"/>
+        </annotations>
+
+        <before>
+            <actionGroup ref="AdminLoginActionGroup" stepKey="loginAsAdmin"/>
+            <!-- Reset config to known defaults before testing -->
+            <actionGroup ref="AdminConfigureAsyncEmailSendingActionGroup" stepKey="resetToDefaults">
+                <argument name="enabled" value="0"/>
+                <argument name="sendingLimit" value="50"/>
+                <argument name="clearSuccessAfterDays" value="30"/>
+                <argument name="clearErrorsAfterDays" value="60"/>
+                <argument name="debug" value="0"/>
+            </actionGroup>
+        </before>
+
+        <after>
+            <!-- Reset config to defaults for test isolation -->
+            <actionGroup ref="AdminConfigureAsyncEmailSendingActionGroup" stepKey="resetToDefaultsAfter">
+                <argument name="enabled" value="0"/>
+                <argument name="sendingLimit" value="50"/>
+                <argument name="clearSuccessAfterDays" value="30"/>
+                <argument name="clearErrorsAfterDays" value="60"/>
+                <argument name="debug" value="0"/>
+            </actionGroup>
+            <actionGroup ref="AdminLogoutActionGroup" stepKey="logoutFromAdmin"/>
+        </after>
+
+        <!-- PART 1: Enable/Disable Toggle and Persistence -->
+        <actionGroup ref="AdminNavigateToAsyncEmailSendingConfigActionGroup" stepKey="navigateToConfig"/>
+        <seeOptionIsSelected selector="{{AdminAsyncEmailSendingConfigSection.enabledField}}" userInput="No" stepKey="verifyDisabledByDefault"/>
+
+        <!-- Enable the module -->
+        <actionGroup ref="AdminEnableAsyncEmailSendingActionGroup" stepKey="enableModule"/>
+
+        <!-- Verify setting persists after page reload -->
+        <actionGroup ref="AdminNavigateToAsyncEmailSendingConfigActionGroup" stepKey="navigateToConfigAfterEnable"/>
+        <seeOptionIsSelected selector="{{AdminAsyncEmailSendingConfigSection.enabledField}}" userInput="Yes" stepKey="verifyEnabledPersists"/>
+
+        <!-- PART 2: Dependent Fields Visibility (JS behavior) -->
+        <!-- Verify fields are visible when enabled -->
+        <seeElement selector="{{AdminAsyncEmailSendingConfigSection.sendingLimitField}}" stepKey="seeSendingLimitField"/>
+        <seeElement selector="{{AdminAsyncEmailSendingConfigSection.clearSuccessAfterDaysField}}" stepKey="seeClearSuccessField"/>
+        <seeElement selector="{{AdminAsyncEmailSendingConfigSection.clearErrorsAfterDaysField}}" stepKey="seeClearErrorsField"/>
+        <seeElement selector="{{AdminAsyncEmailSendingConfigSection.debugField}}" stepKey="seeDebugField"/>
+
+        <!-- Verify default values -->
+        <grabValueFrom selector="{{AdminAsyncEmailSendingConfigSection.sendingLimitField}}" stepKey="grabDefaultSendingLimit"/>
+        <assertEquals stepKey="assertDefaultSendingLimit">
+            <actualResult type="variable">grabDefaultSendingLimit</actualResult>
+            <expectedResult type="string">50</expectedResult>
+        </assertEquals>
+
+        <grabValueFrom selector="{{AdminAsyncEmailSendingConfigSection.clearSuccessAfterDaysField}}" stepKey="grabDefaultClearSuccess"/>
+        <assertEquals stepKey="assertDefaultClearSuccess">
+            <actualResult type="variable">grabDefaultClearSuccess</actualResult>
+            <expectedResult type="string">30</expectedResult>
+        </assertEquals>
+
+        <grabValueFrom selector="{{AdminAsyncEmailSendingConfigSection.clearErrorsAfterDaysField}}" stepKey="grabDefaultClearErrors"/>
+        <assertEquals stepKey="assertDefaultClearErrors">
+            <actualResult type="variable">grabDefaultClearErrors</actualResult>
+            <expectedResult type="string">60</expectedResult>
+        </assertEquals>
+
+        <seeOptionIsSelected selector="{{AdminAsyncEmailSendingConfigSection.debugField}}" userInput="No" stepKey="assertDefaultDebug"/>
+
+        <!-- Disable module and verify fields become hidden -->
+        <selectOption selector="{{AdminAsyncEmailSendingConfigSection.enabledField}}" userInput="0" stepKey="disableModuleTemporarily"/>
+        <waitForElementNotVisible selector="{{AdminAsyncEmailSendingConfigSection.sendingLimitField}}" stepKey="dontSeeSendingLimitAfterDisable"/>
+        <dontSeeElement selector="{{AdminAsyncEmailSendingConfigSection.clearSuccessAfterDaysField}}" stepKey="dontSeeClearSuccessAfterDisable"/>
+        <dontSeeElement selector="{{AdminAsyncEmailSendingConfigSection.clearErrorsAfterDaysField}}" stepKey="dontSeeClearErrorsAfterDisable"/>
+        <dontSeeElement selector="{{AdminAsyncEmailSendingConfigSection.debugField}}" stepKey="dontSeeDebugAfterDisable"/>
+
+        <!-- Re-enable for next tests -->
+        <selectOption selector="{{AdminAsyncEmailSendingConfigSection.enabledField}}" userInput="1" stepKey="reEnableModule"/>
+        <waitForElementVisible selector="{{AdminAsyncEmailSendingConfigSection.sendingLimitField}}" stepKey="waitForFieldsVisible"/>
+
+        <!-- PART 3: Field Validation -->
+        <!-- Test invalid sending limit - negative number -->
+        <fillField selector="{{AdminAsyncEmailSendingConfigSection.sendingLimitField}}" userInput="-5" stepKey="enterNegativeSendingLimit"/>
+        <click selector="{{AdminAsyncEmailSendingConfigSection.saveConfigButton}}" stepKey="trySaveNegative"/>
+        <waitForPageLoad stepKey="waitForValidation1"/>
+        <seeElement selector="{{AdminAsyncEmailSendingConfigSection.sendingLimitFieldError}}" stepKey="seeNegativeError"/>
+
+        <!-- Test invalid sending limit - zero -->
+        <fillField selector="{{AdminAsyncEmailSendingConfigSection.sendingLimitField}}" userInput="0" stepKey="enterZeroSendingLimit"/>
+        <click selector="{{AdminAsyncEmailSendingConfigSection.saveConfigButton}}" stepKey="trySaveZero"/>
+        <waitForPageLoad stepKey="waitForValidation2"/>
+        <seeElement selector="{{AdminAsyncEmailSendingConfigSection.sendingLimitFieldError}}" stepKey="seeZeroError"/>
+
+        <!-- Test invalid sending limit - text -->
+        <fillField selector="{{AdminAsyncEmailSendingConfigSection.sendingLimitField}}" userInput="abc" stepKey="enterTextSendingLimit"/>
+        <click selector="{{AdminAsyncEmailSendingConfigSection.saveConfigButton}}" stepKey="trySaveText"/>
+        <waitForPageLoad stepKey="waitForValidation3"/>
+        <seeElement selector="{{AdminAsyncEmailSendingConfigSection.sendingLimitFieldError}}" stepKey="seeTextError"/>
+
+        <!-- Fix sending limit -->
+        <fillField selector="{{AdminAsyncEmailSendingConfigSection.sendingLimitField}}" userInput="50" stepKey="fixSendingLimit"/>
+
+        <!-- Test invalid clear success days - text -->
+        <fillField selector="{{AdminAsyncEmailSendingConfigSection.clearSuccessAfterDaysField}}" userInput="invalid" stepKey="enterInvalidSuccessDays"/>
+        <click selector="{{AdminAsyncEmailSendingConfigSection.saveConfigButton}}" stepKey="trySaveInvalidSuccess"/>
+        <waitForPageLoad stepKey="waitForValidation4"/>
+        <seeElement selector="{{AdminAsyncEmailSendingConfigSection.clearSuccessAfterDaysFieldError}}" stepKey="seeSuccessError"/>
+
+        <!-- Fix success days -->
+        <fillField selector="{{AdminAsyncEmailSendingConfigSection.clearSuccessAfterDaysField}}" userInput="30" stepKey="fixSuccessDays"/>
+
+        <!-- Test invalid clear errors days - text -->
+        <fillField selector="{{AdminAsyncEmailSendingConfigSection.clearErrorsAfterDaysField}}" userInput="notanumber" stepKey="enterInvalidErrorsDays"/>
+        <click selector="{{AdminAsyncEmailSendingConfigSection.saveConfigButton}}" stepKey="trySaveInvalidErrors"/>
+        <waitForPageLoad stepKey="waitForValidation5"/>
+        <seeElement selector="{{AdminAsyncEmailSendingConfigSection.clearErrorsAfterDaysFieldError}}" stepKey="seeErrorsError"/>
+
+        <!-- Fix all fields with valid values -->
+        <fillField selector="{{AdminAsyncEmailSendingConfigSection.clearErrorsAfterDaysField}}" userInput="60" stepKey="fixErrorsDays"/>
+
+        <!-- PART 4: Configure with Custom Values and Verify Persistence -->
+        <actionGroup ref="AdminConfigureAsyncEmailSendingActionGroup" stepKey="configureCustomSettings">
+            <argument name="enabled" value="1"/>
+            <argument name="sendingLimit" value="100"/>
+            <argument name="clearSuccessAfterDays" value="15"/>
+            <argument name="clearErrorsAfterDays" value="45"/>
+            <argument name="debug" value="1"/>
+        </actionGroup>
+
+        <!-- Reload and verify settings persist -->
+        <actionGroup ref="AdminNavigateToAsyncEmailSendingConfigActionGroup" stepKey="navigateToConfigVerifyCustom"/>
+        <actionGroup ref="AdminAssertAsyncEmailSendingConfigActionGroup" stepKey="assertCustomSettings">
+            <argument name="enabled" value="Yes"/>
+            <argument name="sendingLimit" value="100"/>
+            <argument name="clearSuccessAfterDays" value="15"/>
+            <argument name="clearErrorsAfterDays" value="45"/>
+            <argument name="debug" value="Yes"/>
+        </actionGroup>
+
+        <!-- Update to different values -->
+        <actionGroup ref="AdminConfigureAsyncEmailSendingActionGroup" stepKey="configureNewSettings">
+            <argument name="enabled" value="1"/>
+            <argument name="sendingLimit" value="25"/>
+            <argument name="clearSuccessAfterDays" value="7"/>
+            <argument name="clearErrorsAfterDays" value="14"/>
+            <argument name="debug" value="0"/>
+        </actionGroup>
+
+        <!-- Verify new settings -->
+        <actionGroup ref="AdminNavigateToAsyncEmailSendingConfigActionGroup" stepKey="navigateToConfigVerifyNew"/>
+        <actionGroup ref="AdminAssertAsyncEmailSendingConfigActionGroup" stepKey="assertNewSettings">
+            <argument name="enabled" value="Yes"/>
+            <argument name="sendingLimit" value="25"/>
+            <argument name="clearSuccessAfterDays" value="7"/>
+            <argument name="clearErrorsAfterDays" value="14"/>
+            <argument name="debug" value="No"/>
+        </actionGroup>
+
+        <!-- PART 5: Verify Magento Native Async Email Notice -->
+        <!-- Navigate to Sales Email configuration -->
+        <amOnPage url="{{AdminSalesEmailConfigPage.url}}" stepKey="navigateToSalesEmailConfig"/>
+        <waitForPageLoad stepKey="waitForSalesEmailPage"/>
+
+        <!-- Expand the General section -->
+        <conditionalClick selector="{{AdminSalesEmailConfigSection.generalHeader}}"
+                          dependentSelector="{{AdminSalesEmailConfigSection.asyncSendingField}}"
+                          visible="false"
+                          stepKey="expandGeneralSection"/>
+        <waitForElementVisible selector="{{AdminSalesEmailConfigSection.asyncSendingField}}" stepKey="waitForAsyncField"/>
+
+        <!-- Verify that the async sending field shows the module notice -->
+        <seeElement selector="{{AdminSalesEmailConfigSection.asyncSendingNote}}" stepKey="seeModuleNotice"/>
+
+        <!-- Disable module and verify native field is usable -->
+        <actionGroup ref="AdminDisableAsyncEmailSendingActionGroup" stepKey="disableModuleForNativeTest"/>
+
+        <!-- Navigate back to Sales Email configuration -->
+        <amOnPage url="{{AdminSalesEmailConfigPage.url}}" stepKey="navigateToSalesEmailConfigAgain"/>
+        <waitForPageLoad stepKey="waitForSalesEmailPageAgain"/>
+
+        <!-- Expand the General section -->
+        <conditionalClick selector="{{AdminSalesEmailConfigSection.generalHeader}}"
+                          dependentSelector="{{AdminSalesEmailConfigSection.asyncSendingField}}"
+                          visible="false"
+                          stepKey="expandGeneralSectionAgain"/>
+        <waitForElementVisible selector="{{AdminSalesEmailConfigSection.asyncSendingField}}" stepKey="waitForAsyncFieldAgain"/>
+
+        <!-- Verify disable toggle works -->
+        <actionGroup ref="AdminNavigateToAsyncEmailSendingConfigActionGroup" stepKey="navigateToConfigFinal"/>
+        <seeOptionIsSelected selector="{{AdminAsyncEmailSendingConfigSection.enabledField}}" userInput="No" stepKey="verifyDisabledPersists"/>
+    </test>
+</tests>

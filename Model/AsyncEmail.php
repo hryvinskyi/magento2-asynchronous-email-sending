@@ -1,8 +1,8 @@
 <?php
 /**
- * Copyright (c) 2020. Volodymyr Hryvinskyi.  All rights reserved.
- * @author: <mailto:volodymyr@hryvinskyi.com>
- * @github: <https://github.com/hryvinskyi>
+ * Copyright (c) 2020-2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
  */
 
 declare(strict_types=1);
@@ -49,9 +49,9 @@ class AsyncEmail extends AbstractModel implements AsyncEmailInterface
     /**
      * @inheritdoc
      */
-    public function setEntId(int $entity_id): AsyncEmailInterface
+    public function setEntId(int $entityId): AsyncEmailInterface
     {
-        $this->setData(self::ENTITY_ID, $entity_id);
+        $this->setData(self::ENTITY_ID, $entityId);
 
         return $this;
     }
@@ -103,9 +103,9 @@ class AsyncEmail extends AbstractModel implements AsyncEmailInterface
     /**
      * @inheritdoc
      */
-    public function setRawMessage(string $raw_message): AsyncEmailInterface
+    public function setRawMessage(string $rawMessage): AsyncEmailInterface
     {
-        $this->setData(self::RAW_MESSAGE, $raw_message);
+        $this->setData(self::RAW_MESSAGE, $rawMessage);
 
         return $this;
     }
@@ -121,9 +121,9 @@ class AsyncEmail extends AbstractModel implements AsyncEmailInterface
     /**
      * @inheritdoc
      */
-    public function setCreatedAt(string $created_at): AsyncEmailInterface
+    public function setCreatedAt(string $createdAt): AsyncEmailInterface
     {
-        $this->setData(self::CREATED_AT, $created_at);
+        $this->setData(self::CREATED_AT, $createdAt);
 
         return $this;
     }
@@ -139,9 +139,9 @@ class AsyncEmail extends AbstractModel implements AsyncEmailInterface
     /**
      * @inheritdoc
      */
-    public function setSentAt(string $sent_at): AsyncEmailInterface
+    public function setSentAt(string $sentAt): AsyncEmailInterface
     {
-        $this->setData(self::SENT_AT, $sent_at);
+        $this->setData(self::SENT_AT, $sentAt);
 
         return $this;
     }

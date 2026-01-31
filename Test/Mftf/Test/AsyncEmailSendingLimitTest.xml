@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) 2026. Volodymyr Hryvinskyi. All rights reserved.
+ * Author: Volodymyr Hryvinskyi <volodymyr@hryvinskyi.com>
+ * GitHub: https://github.com/hryvinskyi
+ */
+-->
+<tests xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="urn:magento:mftf:Test/etc/testSchema.xsd">
+    <test name="AsyncEmailSendingLimitTest">
+        <annotations>
+            <features value="AsynchronousEmailSending"/>
+            <stories value="Cron respects the sending limit configuration"/>
+            <title value="Cron only processes configured number of emails per run"/>
+            <description value="Verify that when multiple emails are queued, the cron job only processes up to the configured sending limit."/>
+            <severity value="MAJOR"/>
+            <testCaseId value="ASYNC-EMAIL-015"/>
+            <group value="hryvinskyi"/>
+            <group value="asynchronous_email_sending"/>
+            <group value="email_queue"/>
+        </annotations>
+
+        <before>
+            <actionGroup ref="AdminLoginActionGroup" stepKey="loginAsAdmin"/>
+            <!-- Disable CAPTCHA -->
+            <magentoCLI command="config:set customer/captcha/enable 0" stepKey="disableCaptcha"/>
+            <!-- Disable password reset rate limiting -->
+            <magentoCLI command="config:set customer/password/password_reset_protection_type 0" stepKey="disableRateLimiting"/>
+            <actionGroup ref="CliCacheCleanActionGroup" stepKey="cleanCache">
+                <argument name="tags" value="config"/>
+            </actionGroup>
+            <!-- Enable the async email module with low sending limit -->
+            <actionGroup ref="AdminConfigureAsyncEmailSendingActionGroup" stepKey="configureModule">
+                <argument name="enabled" value="1"/>
+                <argument name="sendingLimit" value="2"/>
+                <argument name="clearSuccessAfterDays" value="30"/>
+                <argument name="clearErrorsAfterDays" value="60"/>
+                <argument name="debug" value="0"/>
+            </actionGroup>
+            <!-- Clear the email queue -->
+            <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="clearEmailQueue" stepKey="clearEmailQueue"/>
+            <!-- Create test customers to trigger emails -->
+            <createData entity="Simple_US_Customer" stepKey="createCustomer1"/>
+            <createData entity="Simple_US_Customer" stepKey="createCustomer2"/>
+            <createData entity="Simple_US_Customer" stepKey="createCustomer3"/>
+            <createData entity="Simple_US_Customer" stepKey="createCustomer4"/>
+            <createData entity="Simple_US_Customer" stepKey="createCustomer5"/>
+            <!-- Clear welcome emails from queue before testing password reset limits -->
+            <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="clearEmailQueue" stepKey="clearWelcomeEmails"/>
+        </before>
+
+        <after>
+            <!-- Re-enable CAPTCHA -->
+            <magentoCLI command="config:set customer/captcha/enable 1" stepKey="enableCaptcha"/>
+            <!-- Re-enable password reset rate limiting -->
+            <magentoCLI command="config:set customer/password/password_reset_protection_type 1" stepKey="enableRateLimiting"/>
+            <!-- Delete test customers -->
+            <deleteData createDataKey="createCustomer1" stepKey="deleteCustomer1"/>
+            <deleteData createDataKey="createCustomer2" stepKey="deleteCustomer2"/>
+            <deleteData createDataKey="createCustomer3" stepKey="deleteCustomer3"/>
+            <deleteData createDataKey="createCustomer4" stepKey="deleteCustomer4"/>
+            <deleteData createDataKey="createCustomer5" stepKey="deleteCustomer5"/>
+            <!-- Clear queue -->
+            <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="clearEmailQueue" stepKey="clearEmailQueueAfter"/>
+            <!-- Reset to default configuration -->
+            <actionGroup ref="AdminConfigureAsyncEmailSendingActionGroup" stepKey="resetConfig">
+                <argument name="enabled" value="0"/>
+                <argument name="sendingLimit" value="50"/>
+                <argument name="clearSuccessAfterDays" value="30"/>
+                <argument name="clearErrorsAfterDays" value="60"/>
+                <argument name="debug" value="0"/>
+            </actionGroup>
+            <actionGroup ref="AdminLogoutActionGroup" stepKey="logoutFromAdmin"/>
+        </after>
+
+        <!-- Trigger 5 password reset emails (these go to queue) using Magento core page/section -->
+        <amOnPage url="{{StorefrontForgotPasswordPage.url}}" stepKey="goToForgotPassword1"/>
+        <waitForPageLoad stepKey="waitForPage1"/>
+        <fillField selector="{{StorefrontForgotPasswordSection.email}}" userInput="$$createCustomer1.email$$" stepKey="fillEmail1"/>
+        <click selector="{{StorefrontForgotPasswordSection.resetMyPasswordButton}}" stepKey="clickReset1"/>
+        <waitForPageLoad stepKey="waitForReset1"/>
+
+        <amOnPage url="{{StorefrontForgotPasswordPage.url}}" stepKey="goToForgotPassword2"/>
+        <waitForPageLoad stepKey="waitForPage2"/>
+        <fillField selector="{{StorefrontForgotPasswordSection.email}}" userInput="$$createCustomer2.email$$" stepKey="fillEmail2"/>
+        <click selector="{{StorefrontForgotPasswordSection.resetMyPasswordButton}}" stepKey="clickReset2"/>
+        <waitForPageLoad stepKey="waitForReset2"/>
+
+        <amOnPage url="{{StorefrontForgotPasswordPage.url}}" stepKey="goToForgotPassword3"/>
+        <waitForPageLoad stepKey="waitForPage3"/>
+        <fillField selector="{{StorefrontForgotPasswordSection.email}}" userInput="$$createCustomer3.email$$" stepKey="fillEmail3"/>
+        <click selector="{{StorefrontForgotPasswordSection.resetMyPasswordButton}}" stepKey="clickReset3"/>
+        <waitForPageLoad stepKey="waitForReset3"/>
+
+        <amOnPage url="{{StorefrontForgotPasswordPage.url}}" stepKey="goToForgotPassword4"/>
+        <waitForPageLoad stepKey="waitForPage4"/>
+        <fillField selector="{{StorefrontForgotPasswordSection.email}}" userInput="$$createCustomer4.email$$" stepKey="fillEmail4"/>
+        <click selector="{{StorefrontForgotPasswordSection.resetMyPasswordButton}}" stepKey="clickReset4"/>
+        <waitForPageLoad stepKey="waitForReset4"/>
+
+        <amOnPage url="{{StorefrontForgotPasswordPage.url}}" stepKey="goToForgotPassword5"/>
+        <waitForPageLoad stepKey="waitForPage5"/>
+        <fillField selector="{{StorefrontForgotPasswordSection.email}}" userInput="$$createCustomer5.email$$" stepKey="fillEmail5"/>
+        <click selector="{{StorefrontForgotPasswordSection.resetMyPasswordButton}}" stepKey="clickReset5"/>
+        <waitForPageLoad stepKey="waitForReset5"/>
+
+        <!-- Verify 5 pending emails -->
+        <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="assertPendingEmailCount" stepKey="assertFivePending">
+            <argument name="expectedCount">5</argument>
+        </helper>
+
+        <!-- Run cron (should only process 2 due to limit) -->
+        <magentoCLI command="hryvinskyi:email:send" stepKey="runEmailCron"/>
+        <wait time="5" stepKey="waitForCron"/>
+
+        <!-- Verify only 2 were sent (3 still pending) -->
+        <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="assertPendingEmailCount" stepKey="assertThreePending">
+            <argument name="expectedCount">3</argument>
+        </helper>
+        <helper class="\Hryvinskyi\AsynchronousEmailSending\Test\Mftf\Helper\EmailQueueHelper" method="assertSentEmailCount" stepKey="assertTwoSent">
+            <argument name="expectedCount">2</argument>
+        </helper>
+    </test>
+</tests>
